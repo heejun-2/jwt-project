@@ -1,10 +1,9 @@
 # 🌴 jwt-security-v1
 
 ## 설명
-💻 Spring Security와 jwt로 로그인, 회원가입 API 이용하는 프로젝트
+💻 스프링 부트에 JWT 방식으로 인증을 진행하는 스프링 시큐리티를 적용하고 JWT 발급, 인증/인가를 구현하는 프로젝트
 
 ## 목차
-1. token 발급하기(완료)
-2. 로그인, 회원가입 구현하기(완료)
-3. accessToken, refreshToken 도입하기(구현중..)
-   - 토큰이 만료되었을 경우 구현해야 함(refreshToken 발급 완료)
+1. token 발급하기
+2. 로그인, 회원가입 구현하기
+3. accessToken, refreshToken 도입하기
