@@ -3,6 +3,7 @@ package com.example.jwtproject.config;
 import com.example.jwtproject.jwt.JWTFilter;
 import com.example.jwtproject.jwt.JWTUtil;
 import com.example.jwtproject.jwt.LoginFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +19,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -48,7 +50,25 @@ public class SecurityConfig{
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         //cors custom setting
         http
-                .cors((cors) -> cors.configurationSource(apiConfigurationSource()));
+                .cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+
+                    @Override
+                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                        CorsConfiguration configuration = new CorsConfiguration();
+
+                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                        configuration.setAllowedMethods(Collections.singletonList("*"));
+                        configuration.setAllowCredentials(true);
+                        configuration.setAllowedHeaders(Collections.singletonList("*"));
+                        configuration.setMaxAge(3600L);
+
+                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+
+                        return configuration;
+                    }
+
+                })));
+
         // csrf disable
         http
                 .csrf((auth) -> auth.disable());
@@ -67,12 +87,15 @@ public class SecurityConfig{
                         .requestMatchers("/login", "/", "/join").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
+
         //JWTFilter 등록
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
         http
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+
         // 세션 설정
         http
                 .sessionManagement((session) -> session
@@ -81,17 +104,7 @@ public class SecurityConfig{
         return http.build();
     }
 
-    public CorsConfigurationSource apiConfigurationSource() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(Arrays.asList("https://api.example.com"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-
-        return source;
-    }
 
 }
